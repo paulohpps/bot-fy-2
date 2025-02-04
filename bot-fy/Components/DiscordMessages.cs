@@ -16,8 +16,9 @@ namespace bot_fy.Components
             DiscordButtonComponent buttonStop = new(ButtonStyle.Secondary, "stop", "Stop", false, new DiscordComponentEmoji("⏹️"));
             DiscordButtonComponent buttonQueue = new(ButtonStyle.Success, "queue", "Queue", false, new DiscordComponentEmoji("⏳"));
             DiscordButtonComponent buttonShuffle = new(ButtonStyle.Success, "shuffle", "Shuffle", false, new DiscordComponentEmoji("🔀"));
+            DiscordButtonComponent buttonLoop = new(ButtonStyle.Success, "loop", "Loop", false, new DiscordComponentEmoji("🔁"));
 
-            builder.AddComponents(buttonSkip, buttonStop, buttonQueue, buttonShuffle);
+            builder.AddComponents(buttonSkip, buttonStop, buttonQueue, buttonShuffle, buttonLoop);
 
             return builder;
         }

@@ -24,7 +24,6 @@ namespace bot_fy.Service
                         Author = string.Join(", ", tagFile.Tag.Performers) ?? "Desconhecido",
                         Duration = tagFile.Properties.Duration,
                         Path = file
-
                     };
                     musicList.Add(music);
                 }

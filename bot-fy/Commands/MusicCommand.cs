@@ -1,5 +1,4 @@
 ﻿using bot_fy.Entitys;
-using bot_fy.Extensions;
 using bot_fy.Extensions.Discord;
 using bot_fy.Service;
 using DSharpPlus.Entities;
@@ -11,7 +10,8 @@ namespace bot_fy.Commands
 {
     public class MusicCommand : ApplicationCommandModule
     {
-        private static readonly Dictionary<ulong, Queue<Music>> track = new();
+        private static readonly Dictionary<ulong, LinkedList<Music>> track = new();
+        private static readonly Dictionary<ulong, bool> loopSingleMusic = new();
         private readonly MusicService musicService = new();
         private readonly AudioService audioService = new();
 
@@ -33,9 +33,9 @@ namespace bot_fy.Commands
                 return;
             }
 
-            track.TryAdd(ctx.Guild.Id, new Queue<Music>());
+            track.TryAdd(ctx.Guild.Id, new LinkedList<Music>());
 
-            musics.ForEach(v => track[ctx.Guild.Id].Enqueue(v));
+            musics.ForEach(v => track[ctx.Guild.Id].AddLast(v));
 
             VoiceNextExtension vnext = ctx.Client.GetVoiceNext();
             VoiceNextConnection connection = vnext.GetConnection(ctx.Guild);
@@ -98,7 +98,8 @@ namespace bot_fy.Commands
                 token = cancellationToken.Token;
                 await Task.Run(async () =>
                 {
-                    Music music = track[ctx.Guild.Id].Dequeue();
+                    Music music = track[ctx.Guild.Id].First();
+                    track[ctx.Guild.Id].RemoveFirst();
                     DiscordMessage message = await ctx.Channel.SendNewMusicPlayAsync(music);
                     Stream pcm = null;
                     try
@@ -118,7 +119,10 @@ namespace bot_fy.Commands
                     {
                         await pcm.DisposeAsync();
                     }
-
+                    if (loopSingleMusic[ctx.Guild.Id] && track[ctx.Guild.Id].Count == 0)
+                    {
+                        track[ctx.Guild.Id].AddFirst(music);
+                    }
                     await message.DeleteAsync();
                 });
             }
@@ -163,7 +167,7 @@ namespace bot_fy.Commands
                 return;
             }
 
-            await ctx.Channel.SendPaginatedAvailablesMusicsAsync(ctx.User, track[ctx.Guild.Id]);
+            await ctx.Channel.SendPaginatedAvailablesMusicsAsync(ctx.User, musics);
         }
 
         [SlashCommand("clear", "Limpa a fila de musicas")]
@@ -200,11 +204,27 @@ namespace bot_fy.Commands
         }
         public static void Shuffle(ulong guildId)
         {
-            track[guildId] = track[guildId].Shuffle();
+            track[guildId] = ShuffleLinkedList(track[guildId]);
+        }
+        public static void Loop(ulong guildId)
+        {
+            loopSingleMusic[guildId] = !loopSingleMusic[guildId];
         }
         public static IEnumerable<Music> GetQueue(ulong guildId)
         {
             return track[guildId];
+        }
+        private static LinkedList<T> ShuffleLinkedList<T>(LinkedList<T> list)
+        {
+            Random Rand = new Random();
+
+            int size = list.Count;
+
+            //Shuffle the list
+            return new LinkedList<T>(list.OrderBy((o) =>
+            {
+                return (Rand.Next() % size);
+            }));
         }
     }
 }

@@ -103,6 +103,10 @@ namespace bot_fy.Extensions.Discord
                 Title = "Musicas Disponiveis",
                 Color = DiscordColor.Green,
             };
+            foreach (Music music in musics)
+            {
+                embed.Description += $"{music.Name}\n";
+            }
 
             await channel.SendMessageAsync(embed);
         }

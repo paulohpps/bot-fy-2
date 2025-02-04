@@ -42,6 +42,11 @@ namespace bot_fy.Discord
                 MusicCommand.Shuffle(args.Guild.Id);
             }
 
+            else if (args.Id == "loop")
+            {
+                MusicCommand.Loop(args.Guild.Id);
+            }
+
             else if (args.Id == "queue")
             {
                 IEnumerable<Music> queue = MusicCommand.GetQueue(args.Guild.Id);
